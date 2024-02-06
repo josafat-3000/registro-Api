@@ -1,4 +1,3 @@
-
 import { TOKEN_SECRET } from "../config.js";
 import jwt from "jsonwebtoken";
 
@@ -10,3 +9,4 @@ export async function createAccessToken(payload) {
     });
   });
 }
+
