@@ -14,12 +14,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = async (email, html) =>{
+export const sendEmail = async (email, sub, html) =>{
   try {
     await transporter.sendMail({
       from: MAIL, // sender address
       to: email, // list of receivers
-      subject: "VERIFICACION DE CORREO ELECTRÓNICO", // Subject line
+      subject: sub, // Subject line
       html, // html body
     });
 
@@ -27,7 +27,7 @@ export const sendEmail = async (email, html) =>{
     console.log('Algo no va bien con el email', error);
   }
 }
-export const getTemplate = (name, token) => {
+export const confirmTemplate = (name, token) => {
   return `
     <div id="email___content">
         
@@ -37,6 +37,19 @@ export const getTemplate = (name, token) => {
             href="http://localhost:3000/api/auth/confirm/${ token }"
             target="_blank"
         >Confirmar Cuenta</a>
+    </div>
+  `;
+}
+export const forgotTemplate = (name,id, token) => {
+  return `
+    <div id="email___content">
+        
+        <h2>Hola ${ name }</h2>
+        <p>Para cambiar tu contraseña, ingresa al siguiente enlace</p>
+        <a
+            href="http://localhost:3000/api/auth/forgot/${id}/${ token }"
+            target="_blank"
+        >Cambiar contraseña</a>
     </div>
   `;
 }

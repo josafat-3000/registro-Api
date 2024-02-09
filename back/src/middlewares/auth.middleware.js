@@ -3,9 +3,7 @@ import { TOKEN_SECRET } from "../config.js";
 
 export const auth = (req, res, next) => {
   try {
-    console.log(req.cookies)
     const { token } = req.cookies|| null;
-
     if (token==null)
       return res
         .status(401)
@@ -13,7 +11,8 @@ export const auth = (req, res, next) => {
 
     jwt.verify(token, TOKEN_SECRET, (error, user) => {
       if (error) {
-        return res.status(401).json({ message: "Token is not valid" });
+        console.log(error)
+        return res.status(401).json({ message: "Token is not valid" ,token});
       }
       req.user = user;
       next();

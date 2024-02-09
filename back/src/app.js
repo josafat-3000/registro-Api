@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.routes.js";
+import eventRoutes from "./routes/event.routes.js";
 import { FRONTEND_URL } from "./config.js";
 
 const app = express();
@@ -19,15 +20,16 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  const path = await import("path");
-  app.use(express.static("client/dist"));
+// if (process.env.NODE_ENV === "production") {
+//   const path = await import("path");
+//   app.use(express.static("client/dist"));
 
-  app.get("*", (req, res) => {
-    console.log(path.resolve("front", "dist", "index.html") );
-    res.sendFile(path.resolve("front", "dist", "index.html"));
-  });
-}
+//   app.get("*", (req, res) => {
+//     console.log(path.resolve("front", "dist", "index.html") );
+//     res.sendFile(path.resolve("front", "dist", "index.html"));
+//   });
+// }
 
 export default app;
