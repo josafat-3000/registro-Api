@@ -3,8 +3,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -20,26 +18,22 @@ import Visibility from '@mui/icons-material/Visibility';
 import { IconButton } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
-
-function DerechosDeAutor(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      <Link color="inherit" href="http://localhost:3000">
-        Tu Sitio Web
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+import { z } from 'zod';
 
 const defaultTheme = createTheme();
 
+const signUpSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
 export default function Registrarse() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordEntered, setPasswordEntered] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -60,12 +54,19 @@ export default function Registrarse() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      signUpSchema.parse({ firstName, lastName, email, password });
       const response = await axios.post('http://localhost:3000/register', { firstName, lastName, email, password });
       console.log('Respuesta del backend:', response.data);
-      // Aquí puedes manejar la respuesta del backend, por ejemplo, redirigir al usuario a otra página
     } catch (error) {
       console.error('Error al enviar solicitud al backend:', error);
-      // Aquí puedes manejar el error, por ejemplo, mostrar un mensaje de error al usuario
+      if (error instanceof z.ZodError) {
+        setErrors(error.errors.reduce((acc, curr) => {
+          if (curr.path) {
+            acc[curr.path[0]] = curr.message;
+          }
+          return acc;
+        }, {}));
+      }
     }
   };
 
@@ -85,7 +86,7 @@ export default function Registrarse() {
             <CssBaseline />
             <Box
               sx={{
-                marginTop: 8,
+                marginTop: 2,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -110,6 +111,8 @@ export default function Registrarse() {
                       autoFocus
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      error={errors.firstName ? true : false}
+                      helperText={errors.firstName ? errors.firstName : ''}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -122,6 +125,8 @@ export default function Registrarse() {
                       autoComplete="family-name"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      error={errors.lastName ? true : false}
+                      helperText={errors.lastName ? errors.lastName : ''}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -137,40 +142,42 @@ export default function Registrarse() {
                       value={email}
                       onChange={handleEmailChange}
                       error={errors.email ? true : false}
-                      helperText={errors.email}
+                      helperText={errors.email ? errors.email : ''}
                       InputProps={{
                         startAdornment: <InputAdornment position="start"><Mail color="disabled" /></InputAdornment>,
                       }}
                     />
                   </Grid>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Contraseña"
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    error={errors.password ? true : false}
-                    helperText={errors.password}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start"><Lock color="disabled" /></InputAdornment>,
-                      endAdornment: passwordEntered && (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={handleClickShowPassword}
-                            edge="end"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
+                  <Grid item xs={12}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Contraseña"
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      error={errors.password ? true : false}
+                      helperText={errors.password ? errors.password : ''}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start"><Lock color="disabled" /></InputAdornment>,
+                        endAdornment: passwordEntered && (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              edge="end"
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
                 </Grid>
                 <Button
                   type="submit"
@@ -189,10 +196,9 @@ export default function Registrarse() {
                 </Grid>
               </Box>
             </Box>
-            <DerechosDeAutor sx={{ mt: 5 }} />
           </Container>
         </ThemeProvider>
       </Paper>
-    </Grid >
+    </Grid>
   );
 }
